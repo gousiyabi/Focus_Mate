@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Focus Mate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+
+  <!-- Home Screen -->
+<div id="homeScreen" class="screen active">
+  <div class="header-container">
+    <div class="main-heading">Focus Mate</div>
+    <p class="tagline">Your AI-powered study companion</p>
+  </div>
+
+  <div class="button-row">
+    <button class="big-button" onclick="switchScreen('analyticsScreen')">
+      📊<br><span class="btn-label">Analytics</span>
+      <div class="subheading">Track • Analyze • Improve</div>
+    </button>
+    <button class="big-button" onclick="switchScreen('settingsScreen')">
+      ⚙️<br><span class="btn-label">Settings</span>
+      <div class="subheading">Erase or Download Data</div>
+    </button>
+    <button class="big-button" onclick="switchScreen('focusScreen')">
+      🔴<br><span class="btn-label">Focus Mode</span>
+      <div class="subheading">Stay focused and beat distractions</div>
+    </button>
+    <button class="big-button" onclick="showRewardScreen()">
+      🏆<br><span class="btn-label">Rewards</span>
+      <div class="subheading">View your achievements</div>
+    </button>
+    <a href="DistractionCheck.html" class="big-button">
+      🧠<br><span class="btn-label">Distraction Check</span>
+      <div class="subheading">AI Camera Detection</div>
+    </a>
+  </div>
+</div>
+
+ <!-- Analytics Screen -->
+<div id="analyticsScreen" class="screen">
+  <div class="main-heading">Analytics</div>
+  <div id="analyticsOutput">
+    <h2>Focus Progress Summary</h2>
+    <p><strong>Total Focus Time:</strong> <span id="totalFocusTime">0h 0m 0s</span></p>
+    <p><strong>Focus Sessions:</strong> <span id="sessionCount">0</span></p>
+    <p><strong>Average Session Duration:</strong> <span id="avgSession">0s</span></p>
+    <p><strong>Longest Session:</strong> <span id="longestSession">0s</span></p>
+    <p><strong>Tab Switches:</strong> <span id="tabSwitches">0</span></p>
+    <p><strong>Clicks:</strong> <span id="clicks">0</span></p>
+    <p><strong>Focus Score:</strong> <span id="focusScore">0</span></p>
+    
+
+    <button onclick="resetAnalytics()">Reset Analytics Data</button>
+    <button class="back-button" onclick="switchScreen('homeScreen')">⬅ Back to Home</button>
+  </div>
+</div>
+
+ <!-- Settings Screen -->
+<div id="settingsScreen" class="screen">
+  <div class="main-heading">Settings</div>
+
+  <!-- Theme Toggle -->
+  <div class="setting-option">
+    <label for="themeToggle">🌗 Switch Theme:</label>
+    <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+  </div>
+
+  <!-- Settings Buttons -->
+  <div id="settingsButtons" style="margin-top: 30px;">
+    <button class="settings-button" id="downloadBtn" onclick="downloadLog()">
+      <div class="settings-icon">⬇️</div>
+      Download Data
+      <div class="settings-subheading">Save your focus analytics log to your device.</div>
+    </button>
+    <button class="settings-button" id="clearBtn" onclick="clearLog()">
+      <div class="settings-icon">🗑️</div>
+      Erase Data
+      <div class="settings-subheading">Clear all stored focus analytics logs.</div>
+    </button>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-button" onclick="switchScreen('homeScreen')">Back</button>
+</div>
+
+
+  <!-- Focus Screen -->
+<div id="focusScreen" class="screen" style="display: none;">
+  <div class="focus-container" style="padding: 20px; max-width: 600px; margin: auto;">
+
+    <!-- Header -->
+    <div class="focus-header" style="text-align: center; margin-bottom: 20px;">
+      <h2>🎯 Focus Timer</h2>
+    </div>
+
+    <!-- Technique Selection -->
+    <div class="focus-form" style="margin-bottom: 20px;">
+      <label for="techniqueSelect"><strong>Choose Study Technique:</strong></label>
+      <select id="techniqueSelect" style="width: 100%; padding: 8px; margin: 10px 0;">
+        <option value="pomodoro">Pomodoro</option>
+        <option value="feynman">Feynman</option>
+        <option value="activeRecall">Active Recall</option>
+      </select>
+      <p id="techniqueDescription" style="white-space: pre-line; margin-bottom: 20px; font-style: italic; background-color: #f9f9f9; padding: 10px; border-radius: 8px;"></p>
+
+      <!-- Focus Time Input -->
+      <label for="focusGoal"><strong>Enter Focus Time (minutes):</strong></label>
+      <input type="number" id="focusGoal" min="1" value="25" style="width: 100%; padding: 8px; margin-top: 10px;" />
+    </div>
+
+    <!-- Timer Display -->
+    <div class="focus-timer" style="text-align: center; margin: 30px 0;">
+      <div id="timerDisplay" style="font-size: 48px; margin-bottom: 20px;">00:00</div>
+      <button id="startButton" style="padding: 10px 20px; font-size: 16px;">Start</button>
+      <button id="stopButton" style="padding: 10px 20px; font-size: 16px; display: none;">Stop</button>
+    </div>
+
+
+    <!-- Feedback / XP -->
+    <div id="feedbackCard" style="display: none; text-align: center; background: #e8f5e9; padding: 20px; border-radius: 10px;">
+      <h3 id="feedbackMessage"><span id="earnedXP"></span></h3>
+      <p id="levelInfo">🎓 Your Level: <span id="level">1</span> | Total XP: <span id="xp">0</span></p>
+    </div>
+     <button onclick="goBackToHome()" style="
+  background: rgba(255, 255, 255, 0.3);
+  color: #000;
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+"
+onmouseover="this.style.background='rgba(255,255,255,0.5)'; this.style.transform='scale(1.03)';"
+onmouseout="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1)';">
+  ⬅ Back to Home
+</button>
+
+  </div>
+
+</div>
+
+  <!-- ✅ REWARD SCREEN -->
+<div id="rewardScreen" class="screen" style="display: none; padding: 20px; max-width: 600px; margin: auto;">
+  <h2>🎁 Your Focus Rewards</h2>
+
+  <!-- 🌟 Motivational Quote -->
+  <p style="
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e40af;
+    margin-top: 40px;
+    font-family: 'Segoe UI', sans-serif;
+  ">
+    🚀 Focus is your superpower. Claim your rewards and rise to the top!
+  </p>
+
+  <!-- 🎉 Show Rewards Button -->
+  <div style="text-align: center; margin-top: 15px;">
+    <button onclick="document.getElementById('rewardDetails').style.display='block'; this.style.display='none';" style="
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      padding: 14px 30px;
+      font-size: 17px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease-in-out;
+    ">
+      🎉 Show My Rewards
+    </button>
+  </div>
+  <br><br>
+ 
+
+
+  <!-- 🎯 Rewards Content -->
+  <div id="rewardDetails" style="display: none;">
+    <div id="rewardSummaryText" style="margin-bottom: 10px; font-size: 18px;">
+    </div>
+
+    <label for="levelProgress">Level Progress</label>
+    <progress id="levelProgress" value="60" max="100" style="width: 100%; height: 20px; margin-bottom: 10px;"></progress>
+    <div id="levelText" style="margin: 10px 0; font-weight: bold; font-size: 18px;"></div>
+
+    <h3>🏆 Milestones</h3>
+    <ul id="milestonesList" style="margin-bottom: 20px;">
+    </ul>
+
+    <div id="rewardMessage" style="font-style: italic; color: #10b981; font-size: 16px;">
+      You’re doing amazing! Stay consistent for bigger rewards!
+    </div>
+  </div>
+
+  <!-- 🔙 Back Button -->
+  <div style="text-align: center;">
+    <button class="back-button" onclick="switchScreen('homeScreen')" style="
+      background-color: #3b82f6;
+      color: white;
+      padding: 10px 24px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    "
+    onmouseover="this.style.backgroundColor='#2563eb'"
+    onmouseout="this.style.backgroundColor='#3b82f6'">
+      ⬅ Back to Home
+    </button>
+  </div>
+
+  <br><br>
+</div>
+
+    <div id="historyScreen" class="screen" style="display: none; flex-direction: column; padding: 20px;">
+  <h2>📊 Focus Session History</h2>
+  <button onclick="switchScreen('focusScreen')" style="margin-bottom: 15px;">← Back</button>
+  <ul id="sessionList" style="list-style: none; padding: 0;"></ul>
+
+ 
+
+</div>
+ <button id="logoutBtn">Logout</button>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script>
+  // This runs immediately before rendering
+  (function() {
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark-theme");
+    }
+  })();
+</script>
+<!-- 🎊 Confetti Script -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<!-- 🔊 Level-up Sound -->
+<audio id="rewardSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.wav"></audio>
+
+<script>
+
+let isTimerRunning = false;
+let wasTabHidden = false;
+let timer = null;
+let secondsLeft = 0;
+let timerStart = 0;  // keep this one
+
+const xpPerMinute = 10;
+let totalXP = 0;
+let level = 1;
+
+let log = "Monitoring started...\n";
+let focusStartTime = Date.now();
+let blurStartTime = null;
+let focusTimerAnimationFrame;
+
+let focusDurations = [];
+let clickCount = 0;
+let tabSwitchCount = 0;
+
+  function addLogEntry(entry) {
+    const timestamp = new Date().toLocaleString();
+    log += `[${timestamp}] ${entry}\n`;
+  }
+
+  function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0
+      ? `${mins} minute${mins !== 1 ? "s" : ""} ${secs} second${secs !== 1 ? "s" : ""}`
+      : `${secs} second${secs !== 1 ? "s" : ""}`;
+  }
+
+  window.addEventListener("blur", () => {
+    const now = Date.now();
+    const focusedDuration = Math.floor((now - focusStartTime) / 1000);
+    addLogEntry(`User left the tab. Focus time: ${formatDuration(focusedDuration)}.`);
+    if (focusedDuration > 0) focusDurations.push(focusedDuration);
+    blurStartTime = now;
+    tabSwitchCount++;
+    updateAnalyticsSummary();
+  });
+
+  window.addEventListener("focus", () => {
+    const now = Date.now();
+    if (blurStartTime) {
+      const awayDuration = Math.floor((now - blurStartTime) / 1000);
+      addLogEntry(`User returned. Away for ${formatDuration(awayDuration)}.`);
+    } else {
+      addLogEntry("User returned to the tab.");
+    }
+    focusStartTime = now;
+    updateAnalyticsSummary();
+  });
+
+  window.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    addLogEntry("Right-click detected.");
+  });
+
+  window.addEventListener("beforeunload", (e) => {
+    const now = Date.now();
+    const focusedDuration = Math.floor((now - focusStartTime) / 1000);
+    addLogEntry(`Page unload. Last focus: ${formatDuration(focusedDuration)}.`);
+    e.returnValue = '';
+  });
+
+  window.addEventListener("click", () => {
+    clickCount++;
+    updateAnalyticsSummary();
+  });
+  // Track tab visibility change to pause/resume timer properly
+const tabWarning = document.getElementById("tabWarning");
+
+  
+function switchScreen(screenName) {
+  const screens = document.querySelectorAll(".screen");
+  screens.forEach(s => s.style.display = "none");
+
+  const target = document.getElementById(screenName);
+  if (!target) return;
+
+  if (screenName === "settingsScreen") {
+    setTimeout(() => {
+      target.classList.add('force-layout');
+      target.style.display = 'flex';
+    }, 50);
+  } else {
+    document.getElementById('settingsScreen').classList.remove('force-layout');
+    target.style.display = (screenName === 'homeScreen') ? 'flex' : 'block';
+  }
+
+  if (screenName === 'focusScreen') updateDisplay();
+  if (screenName === 'rewardScreen') {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setTimeout(updateRewardScreen, 200); // Delay ensures DOM is ready
+    } else {
+      alert("Please log in again");
+      window.location.href = "login.html";
+    }
+  });
+}
+
+
+
+  if (screenName === 'analyticsScreen') updateAnalyticsSummary();
+  if (screenName === 'historyScreen') loadSessionHistory();
+}
+
+
+
+  function resetAnalytics() {
+    if (confirm("Reset analytics data?")) {
+      log = "Monitoring started...\n";
+      focusDurations = [];
+      clickCount = 0;
+      tabSwitchCount = 0;
+      focusStartTime = Date.now();
+      blurStartTime = null;
+      updateAnalyticsSummary();
+      alert("Analytics reset.");
+    }
+  }
+
+// DOM Elements
+const techniqueSelect = document.getElementById("techniqueSelect");
+const techniqueDescription = document.getElementById("techniqueDescription");
+const timerDisplay = document.getElementById("timerDisplay");
+const focusGoalInput = document.getElementById("focusGoal");
+const startButton = document.getElementById("startButton");
+const stopButton = document.getElementById("stopButton");
+const feedbackCard = document.getElementById("feedbackCard");
+const feedbackMessage = document.getElementById("feedbackMessage");
+const levelInfo = document.getElementById("levelInfo");
+const earnedXP = document.getElementById("earnedXP");
+const xpSpan = document.getElementById("xp");
+const levelSpan = document.getElementById("level");
+
+// Technique Descriptions
+const techniqueInfo = {
+  pomodoro: `⏱️ Pomodoro Technique:
+This method helps you avoid burnout by studying in short bursts. 
+- Study for 25 minutes.
+- Then take a 5-minute break.
+- After 4 rounds, take a longer 15–30 minute break.
+✅ It boosts focus and keeps your mind fresh!`,
+
+  feynman: `🧠 Feynman Technique:
+Learn by teaching. 
+- Pick a topic and try to explain it in simple words, like you're teaching a child.
+- Identify the parts where you're confused.
+- Go back, revise, and simplify your explanation even more.
+✅ This helps you understand topics deeply and identify weak areas.`,
+
+  activeRecall: `📝 Active Recall:
+Instead of rereading, test yourself.
+- After learning, try to write or say what you remember without looking.
+- Use flashcards or ask yourself questions.
+- Review mistakes and repeat.
+✅ This makes your brain actively remember information, helping it stick!`
+};
+
+// Set default description
+techniqueDescription.innerText = techniqueInfo[techniqueSelect.value];
+
+// Change technique description on selection
+techniqueSelect.addEventListener("change", () => {
+  techniqueDescription.innerText = techniqueInfo[techniqueSelect.value];
+});
+// Start button logic
+startButton.addEventListener("click", () => {
+  const minutes = parseInt(focusGoalInput.value);
+  if (isNaN(minutes) || minutes <= 0) return;
+
+  secondsLeft = minutes * 60;
+  updateDisplay();
+  startButton.style.display = "none";
+  stopButton.style.display = "inline-block";
+  feedbackCard.style.display = "none";
+
+  timerStart = Date.now();  // Set timer start ONCE here
+  saveSessionStart();
+
+  isTimerRunning = true; // ✅ Added this line
+
+  timer = setInterval(() => {
+    secondsLeft--;
+    updateDisplay();
+
+    if (secondsLeft <= 0) {
+      clearInterval(timer);
+      isTimerRunning = false; // ✅ Added this line
+       const sessionDuration = minutes;
+      const xpEarned = sessionDuration * xpPerMinute;
+      saveSessionEnd(sessionDuration, xpEarned); // ✅ Added fix
+
+      showFeedback(minutes);
+    }
+  }, 1000);
+});
+
+// Stop button logic
+stopButton.addEventListener("click", () => {
+  clearInterval(timer);
+  isTimerRunning = false; // ✅ Added this line
+
+  const sessionDuration = Math.floor((Date.now() - timerStart) / 60000); // in minutes
+  const xpEarned = sessionDuration * xpPerMinute;
+  saveSessionEnd(sessionDuration, xpEarned);
+
+  startButton.style.display = "inline-block";
+  stopButton.style.display = "none";
+  timerDisplay.textContent = "00:00";
+});
+
+// Update timer display
+function updateDisplay() {
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
+  timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// Show XP feedback
+function showFeedback(minutes) {
+  const earned = minutes * xpPerMinute;
+  totalXP += earned;
+  level = Math.floor(totalXP / 100) + 1;
+
+  feedbackCard.style.display = "block";
+  earnedXP.textContent = `+${earned} XP`;
+  xpSpan.textContent = totalXP;
+  levelSpan.textContent = level;
+
+  startButton.style.display = "inline-block";
+  stopButton.style.display = "none";
+  timerDisplay.textContent = "00:00";
+}
+
+function goBackToHome() {
+  document.getElementById("focusScreen").style.display = "none";
+  document.getElementById("homeScreen").style.display = "block"; // Or your main screen ID
+}
+
+
+  function downloadLog() {
+    const blob = new Blob([log], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "focus_analytics_log.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearLog() {
+    if (confirm("Clear logs?")) {
+      log = "";
+      focusDurations = [];
+      clickCount = 0;
+      tabSwitchCount = 0;
+      updateAnalyticsSummary();
+      alert("Logs erased.");
+    }
+  }
+
+  function updateAnalyticsSummary() {
+    const totalFocus = focusDurations.reduce((a, b) => a + b, 0);
+    const average = focusDurations.length ? Math.floor(totalFocus / focusDurations.length) : 0;
+    const longest = focusDurations.length ? Math.max(...focusDurations) : 0;
+    const focusScore = Math.max(0, Math.floor((average * 2) - (tabSwitchCount * 3) - (clickCount * 2)));
+
+    const analyticsOutput = document.getElementById("analyticsOutput");
+    if (analyticsOutput && document.getElementById("analyticsScreen").style.display !== "none") {
+      analyticsOutput.innerHTML = `
+        <strong>Focus Sessions:</strong> ${focusDurations.length}<br>
+        <strong>Total Focus Time:</strong> ${formatDuration(totalFocus)}<br>
+        <strong>Average Focus Time:</strong> ${formatDuration(average)}<br>
+        <strong>Longest Focus Session:</strong> ${formatDuration(longest)}<br>
+        <strong>Number of Clicks:</strong> ${clickCount}<br>
+        <strong>Tab Switches:</strong> ${tabSwitchCount}<br>
+        <strong>Focus Score:</strong> ${focusScore}<br>
+
+        <canvas id="focusPieChart" class="chart-canvas" style="margin: 30px auto;display: block;"></canvas>
+      <button onclick="resetAnalytics()">Reset Analytics Data</button>
+      <button class="back-button" onclick="switchScreen('homeScreen')">⬅ Back to Home</button>
+      `;
+        // 📊 Draw Pie Chart for Focus vs Distraction
+const ctx = document.getElementById("focusPieChart")?.getContext("2d");
+
+// Estimate distracted time based on clicks and tab switches
+const totalAwayTime = Math.floor(tabSwitchCount * 10 + clickCount * 5); // adjust as needed
+
+if (ctx) {
+  if (window.focusChart) {
+    window.focusChart.destroy(); // remove old chart
+  }
+
+  window.focusChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Focused', 'Distracted'],
+      datasets: [{
+        data: [totalFocus, totalAwayTime],
+        backgroundColor: ['#4ade80', '#f87171'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Focus vs Distraction (Estimation)',
+          font: {
+            size: 18
+          }
+        },
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+}
+document.getElementById("rewardDetails").style.display = "block";
+
+      
+    }
+  }
+
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    themeToggle.innerText = document.body.classList.contains('dark-theme') ? '☀️ Light Mode' : '🌙 Dark Mode';
+  });
+
+  // ✅ Simulated focus data (in seconds) - this should already exist in your main script
+ // Example: [1200, 1800, 2400] — filled during use
+// If you already have focusDurations being pushed after each session, this will work perfectly.
+
+const rewardMessages = [
+  "Keep up the great work! Your focus is your superpower.",
+  "Every minute focused is a step closer to success! 🌱",
+  "You’re doing amazing, don’t stop now!",
+  "Stay sharp and keep crushing those goals!",
+  "Your future self is already thanking you. 💪"
+];
+
+// ✅ Function to update reward screen
+console.log("Running updateRewardScreen()");
+console.log("Current user:", auth.currentUser);
+
+function updateRewardScreen() 
+{
+  const user = auth.currentUser;
+  if (!user) {
+    alert("User not signed in");
+    return;
+  }
+
+  db.collection("users").doc(user.uid).collection("sessions")
+    .get()
+    .then(querySnapshot => {
+      let totalMinutes = 0;
+      let sessions = 0;
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.duration) {
+          totalMinutes += data.duration;
+          sessions++;
+        }
+      });
+console.log("Sessions found:", sessions);
+console.log("Total XP:", totalXP);
+console.log("Summary updated.");
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      const level = Math.floor(totalMinutes / 60); // 1 level = 60 minutes
+      const progressToNextLevel = totalMinutes % 60;
+      const percentToNext = Math.floor((progressToNextLevel / 60) * 100);
+
+      const milestonesUnlocked = [];
+
+let totalXP = 0;
+querySnapshot.forEach(doc => {
+  const data = doc.data();
+  if (data.xpEarned) {
+    totalXP += data.xpEarned;
+  }
+});
+
+// Milestone logic
+if (totalXP >= 20) milestonesUnlocked.push("✅ Earned 20 XP");
+if (sessions >= 2) milestonesUnlocked.push("🎯 Completed 2 Focus Sessions");
+if (sessions >= 10) milestonesUnlocked.push("🏅 Completed 10 Focus Sessions");
+if (totalMinutes >= 60) milestonesUnlocked.push("🕐 1 Hour Focus Club");
+if (totalMinutes >= 120) milestonesUnlocked.push("🧠 2 Hour Warrior");
+if (sessions >= 20) milestonesUnlocked.push("🔥 Used Focus Mode 20 Times");
+
+      const randomMsgIndex = Math.floor(Math.random() * rewardMessages.length);
+
+      // ✨ Update UI
+      document.getElementById("rewardSummaryText").innerHTML =
+        `Total Focus Time: <strong>${hours}h ${minutes}m</strong><br>
+         Sessions: <strong>${sessions}</strong><br>
+         Current Level: <strong>${level}</strong>`;
+
+      document.getElementById("levelProgress").value = percentToNext;
+      document.getElementById("levelText").textContent = `${percentToNext}% to next level`;
+
+      const milestonesList = document.getElementById("milestonesList");
+      milestonesList.innerHTML = "";
+      milestonesUnlocked.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        milestonesList.appendChild(li);
+      });
+
+      document.getElementById("rewardMessage").textContent = rewardMessages[randomMsgIndex];
+      document.getElementById("rewardDetails").style.display = "block";
+    })
+    .catch(error => {
+      console.error("Error fetching reward data:", error);
+    });
+    document.getElementById("rewardDetails").style.display = "block";
+
+// Optional: hide the show button if it exists
+const showBtn = document.querySelector("#rewardScreen button");
+if (showBtn) showBtn.style.display = "none";
+
+}
+
+
+function loadSessionHistory() {
+  const sessionList = document.getElementById("sessionList");
+  sessionList.innerHTML = "Loading...";
+
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    sessionList.innerHTML = "<li>User ID not found.</li>";
+    return;
+  }
+
+  db.collection("users")
+    .doc(userId)
+    .collection("sessions")
+    .orderBy("startTime", "desc")
+    .limit(10)
+    .get()
+    .then((querySnapshot) => {
+      sessionList.innerHTML = "";
+      if (querySnapshot.empty) {
+        sessionList.innerHTML = "<li>No sessions found.</li>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const date = data.startTime?.toDate().toLocaleString() || "N/A";
+        const duration = data.duration || 0;
+        const xp = data.xpEarned || 0;
+
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${date}</strong><br>Duration: ${duration} min | XP Earned: ${xp}`;
+        li.style.marginBottom = "10px";
+        sessionList.appendChild(li);
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching sessions: ", error);
+      sessionList.innerHTML = "<li>Error loading sessions.</li>";
+    });
+}
+
+  function showRewardScreen() {
+    switchScreen('rewardScreen');
+
+    // Check if audio is loaded
+    const sound = document.getElementById('rewardSound');
+    if (sound) sound.play();
+
+    // Fire confetti
+    if (typeof confetti === 'function') {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    } else {
+      console.warn('Confetti function not loaded.');
+    }
+  }
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js" type="text/javascript"></script>
+<script src="script.js" type="module"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    updateDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+  // ✅ Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyA2M1jddLP6Nt0iKjqELCbcB7n1c2kcKGY",
+    authDomain: "focus-mate-f8462.firebaseapp.com",
+    projectId: "focus-mate-f8462",
+    storageBucket: "focus-mate-f8462.appspot.com",
+    messagingSenderId: "656181631318",
+    appId: "1:656181631318:web:fbb479ad9eaad6afd81ef7",
+    measurementId: "G-T4VWBR5YFB"
+  };
+
+  // ✅ Initialize services
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Optional: expose db globally
+  window.db = db;
+  window.auth = auth;
+  window.onAuthStateChanged = onAuthStateChanged;
+
+  // ✅ Save Session Start (modular Firebase)
+  function saveSessionStart() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const technique = document.getElementById("techniqueSelect").value;
+    const sessionsRef = collection(doc(db, "users", user.uid), "sessions");
+
+    addDoc(sessionsRef, {
+      startTime: new Date(),
+      technique: technique,
+      status: "started"
+    })
+    .then(docRef => {
+      localStorage.setItem("currentSessionId", docRef.id);
+    })
+    .catch(err => {
+      console.error("Failed to start session:", err);
+    });
+  }
+
+  // ✅ Save Session End (modular Firebase)
+  function saveSessionEnd(duration, xp) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const sessionId = localStorage.getItem("currentSessionId");
+    if (!sessionId) return;
+
+    const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+
+    updateDoc(sessionRef, {
+      endTime: serverTimestamp(),
+      duration: duration,
+      xpEarned: xp,
+      status: "completed"
+    })
+    .catch(err => {
+      console.error("Failed to save session end:", err);
+    });
+  }
+
+  // ✅ Make functions accessible to HTML onclick handlers
+  window.saveSessionStart = saveSessionStart;
+  window.saveSessionEnd = saveSessionEnd;
+
+
+
+  
+  // ✅ Redirect to login.html if not signed in
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      console.log("✅ Logged in as:", user.email);
+
+      // Optional: test Firestore write for logged-in user
+      try {
+        const docRef = await addDoc(collection(db, "testLogs"), {
+          uid: user.uid,
+          message: "Test entry from Focus Mate",
+          timestamp: new Date().toISOString()
+        });
+        console.log("✅ Document written with ID:", docRef.id);
+      } catch (e) {
+        console.error("❌ Firestore write error:", e);
+      }
+    }
+    
+  });
+  import { signOut } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth)
+    .then(() => {
+      console.log("✅ User signed out");
+      window.location.href = "login.html";
+    })
+    .catch((error) => {
+      console.error("❌ Sign-out error:", error);
+    });
+});
+
+  
+</script>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Distraction Check</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+
+  <style>
+  :root {
+    --gradient-bg: linear-gradient(to right, #a1c4fd, #c2e9fb);
+    --text-color: #2c2c2c;
+    --card-color: rgba(255, 255, 255, 0.85);
+    --button-bg: linear-gradient(135deg, #56ccf2, #2f80ed);
+    --button-hover-bg: linear-gradient(135deg, #2f80ed, #1c60d3);
+  }
+
+  .dark-theme {
+    --gradient-bg: linear-gradient(135deg, #232526, #1c1c1c);
+    --text-color: #dddddd;
+    --card-color: rgba(40, 40, 40, 0.85);
+    --button-bg: linear-gradient(135deg, #5a189a, #3c096c);
+    --button-hover-bg: linear-gradient(135deg, #8e2de2, #4a00e0);
+  }
+
+  body {
+    background: var(--gradient-bg);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-color);
+    transition: background 0.5s ease, color 0.5s ease;
+    text-align: center;
+    padding: 30px;
+  }
+
+  #webcam-container {
+    margin-top: 20px;
+  }
+
+  #label-container {
+    margin-top: 15px;
+    font-size: 1.2rem;
+  }
+
+  .back-button {
+    margin-top: 40px;
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    background: var(--card-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .back-button:hover {
+    background: var(--button-bg);
+    color: white;
+  }
+  html, body {
+  height: 100%;
+  background: var(--gradient-bg);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+.theme-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.theme-btn:hover {
+  background: var(--button-hover-bg);
+}
+
+</style>
+</head>
+
+<body>
+
+  <h1>AI Powered Distraction Check</h1>
+  <p>AI Camera Detection</p>
+
+  <div id="webcam-container">
+    <video id="webcam" autoplay playsinline width="320" height="240"></video>
+  </div>
+  <div id="label-container">Loading model...</div>
+
+  <button class="back-button" onclick="window.location.href='index.html'">← Back</button>
+<button class="theme-btn">Toggle Theme</button>
+
+  <!-- Load TensorFlow.js and Teachable Machine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark-theme");
+  } else {
+    document.documentElement.classList.remove("dark-theme");
+  }
+});
+
+  </script>
+
+  <script>
+  const URL = "model/";
+  let model, webcam, labelContainer, maxPredictions;
+
+  let lastClass = "";           // Tracks current top prediction
+  let notifiedPhone = false;    // Whether phone distraction was notified
+  let notifiedAway = false;     // Whether away distraction was notified
+
+  const phoneQuotes = [
+    "Instagram can wait. Your future can't. 📚",
+    "Your phone won't run away. But time might. ⏳",
+    "I know the phone is tempting… but your dreams deserve attention.",
+    "Eyes off the screen, genius! Time to shine in real life.",
+    "Scroll later, score higher."
+  ];
+
+  const awayQuotes = [
+    "Other tasks matter. But today, you chose to focus. Stay here. 💡",
+    "Let the world wait. Right now, it's just you and your goals.",
+    "Every minute away is a minute lost. Bring it back.",
+    "You stepped out, but your goals didn’t. Come back and crush it!",
+    "Distractions delay destiny. One session at a time."
+  ];
+
+  async function init() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    model = await tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    webcam = new tmImage.Webcam(320, 240, true);
+    await webcam.setup();
+    await webcam.play();
+    window.requestAnimationFrame(loop);
+
+    document.getElementById("webcam").replaceWith(webcam.canvas);
+    labelContainer = document.getElementById("label-container");
+  }
+
+  async function loop() {
+    webcam.update();
+    await predict();
+    window.requestAnimationFrame(loop);
+  }
+
+  async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+    const threshold = 0.85;
+
+    let highest = prediction[0];
+    for (let i = 1; i < prediction.length; i++) {
+      if (prediction[i].probability > highest.probability) {
+        highest = prediction[i];
+      }
+    }
+
+    if (highest.probability > threshold) {
+      const currentClass = highest.className.toLowerCase();
+      labelContainer.innerHTML = `${highest.className}: ${highest.probability.toFixed(2)}`;
+
+      if (currentClass.includes("phone")) {
+        if (!notifiedPhone) {
+          notifyUser(getRandomQuote(phoneQuotes));
+          notifiedPhone = true;
+          notifiedAway = false;
+        }
+      } else if (currentClass.includes("away")) {
+        if (!notifiedAway) {
+          notifyUser(getRandomQuote(awayQuotes));
+          notifiedAway = true;
+          notifiedPhone = false;
+        }
+      } else if (currentClass.includes("focused")) {
+        // Reset when user comes back to focus
+        notifiedPhone = false;
+        notifiedAway = false;
+      }
+
+      lastClass = currentClass;
+    } else {
+      labelContainer.innerHTML = "";
+    }
+  }
+
+  function getRandomQuote(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function notifyUser(message) {
+    if (Notification.permission === "granted") {
+      new Notification("FocusMate Reminder", {
+        body: message,
+        icon: "https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
+      });
+    } else if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          new Notification("FocusMate Reminder", {
+            body: message,
+            icon: "https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
+          });
+        }
+      });
+    }
+    // If 'denied', do nothing
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+
+  // Theme toggle button click handler
+document.querySelector(".theme-btn").addEventListener("click", function () {
+  const isDark = document.documentElement.classList.toggle("dark-theme");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+});
+
+
+</script>
